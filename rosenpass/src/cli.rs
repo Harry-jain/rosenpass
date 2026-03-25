@@ -495,7 +495,23 @@ impl CliArgs {
             )?;
         }
 
-        srv.event_loop()
+        // OVS Setup
+        if let Some(network) = &config.network {
+            if network.backend == "ovs" {
+                crate::integration::ovs::setup_ovs_backend(&network.bridge, &network.interface)?;
+            }
+        }
+
+        let res = srv.event_loop();
+
+        // OVS Teardown
+        if let Some(network) = &config.network {
+            if network.backend == "ovs" {
+                let _ = crate::integration::ovs::teardown_ovs_backend(&network.bridge, &network.interface);
+            }
+        }
+
+        res
     }
 
     /// Create the WireGuard PSK broker to be used by

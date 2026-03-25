@@ -42,6 +42,10 @@ pub struct Rosenpass {
     #[serde(flatten)]
     pub keypair: Option<Keypair>,
 
+    /// OVS or other network configurations
+    #[serde(default)]
+    pub network: Option<NetworkConfig>,
+
     /// Location of the API listen sockets
     #[cfg(feature = "experiment_api")]
     #[serde(default = "empty_api_config")]
@@ -73,6 +77,15 @@ pub struct Rosenpass {
     /// the config file.
     #[serde(skip)]
     pub config_file_path: PathBuf,
+}
+
+/// Network backend configuration
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct NetworkConfig {
+    pub backend: String,
+    pub bridge: String,
+    pub interface: String,
 }
 
 /// Public key and secret key locations.
@@ -483,6 +496,7 @@ impl Rosenpass {
     pub fn new(keypair: Option<Keypair>) -> Self {
         Self {
             keypair,
+            network: None,
             listen: vec![],
             #[cfg(feature = "experiment_api")]
             api: crate::api::config::ApiConfig::default(),
